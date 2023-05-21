@@ -4,7 +4,11 @@
 			"path": "."
 		}
 	],
-	"settings": {},
+	"settings": {
+		"cSpell.words": [
+			"Healthz"
+		]
+	},
 	"extensions": {
 		"recommendations": [
 			"TechTrain.railway-vscode"
