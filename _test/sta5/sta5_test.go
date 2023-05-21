@@ -1,6 +1,7 @@
 package sta5_test
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -8,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/TechBowl-japan/go-stations/db"
-	"github.com/TechBowl-japan/go-stations/handler"
 	"github.com/TechBowl-japan/go-stations/handler/router"
+	"github.com/TechBowl-japan/go-stations/model"
 )
 
 func TestStation5(t *testing.T) {
@@ -37,7 +38,7 @@ func TestStation5(t *testing.T) {
 	})
 
 	r := router.NewRouter(todoDB)
-	h := handler.NewHealthzHandler()
+	h := model.HealthzHandler{}
 	r.Handle("/healthz", h)
 	srv := httptest.NewServer(r)
 	defer srv.Close()
@@ -65,6 +66,7 @@ func TestStation5(t *testing.T) {
 		return
 	}
 
+	fmt.Println("got:", string(got))
 	if string(got) != want {
 		t.Errorf("期待していない内容です, got = %s, want = %s\n", got, want)
 		return
