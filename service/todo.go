@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/TechBowl-japan/go-stations/model"
 )
@@ -26,7 +27,53 @@ func (s *TODOService) CreateTODO(ctx context.Context, subject, description strin
 		confirm = `SELECT subject, description, created_at, updated_at FROM todos WHERE id = ?`
 	)
 
-	return nil, nil
+	// Prepare the insert statement
+	stmt, err := s.db.PrepareContext(ctx, insert)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	// Execute the insert statement
+	result, err := stmt.ExecContext(ctx, subject, description)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check the number of rows affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	if rowsAffected == 0 {
+		return nil, errors.New("failed to create TODO: subject cannot be empty")
+	}
+
+	// Get the ID of the inserted TODO
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	// Prepare the confirm statement
+	confirmStmt, err := s.db.PrepareContext(ctx, confirm)
+	if err != nil {
+		return nil, err
+	}
+	defer confirmStmt.Close()
+
+	// Query the inserted TODO by ID
+	row := confirmStmt.QueryRowContext(ctx, id)
+
+	// Create a TODO object to return
+	todo := &model.TODO{}
+	err = row.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, err
 }
 
 // ReadTODO reads TODOs on DB.

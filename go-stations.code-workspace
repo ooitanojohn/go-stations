@@ -6,7 +6,11 @@
 	],
 	"settings": {
 		"cSpell.words": [
-			"Healthz"
+			"cmpopts",
+			"dbpath",
+			"Healthz",
+			"testcases",
+			"todos"
 		]
 	},
 	"extensions": {
