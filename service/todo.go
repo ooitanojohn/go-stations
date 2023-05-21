@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
-	"errors"
+	"fmt"
 
 	"github.com/TechBowl-japan/go-stations/model"
 )
@@ -21,12 +21,19 @@ func NewTODOService(db *sql.DB) *TODOService {
 }
 
 // CreateTODO creates a TODO on DB.
-func (s *TODOService) CreateTODO(ctx context.Context, subject, description string) (*model.TODO, error) {
+func (s *TODOService) CreateTODO(ctx context.Context, subject string, description string) (*model.TODO, error) {
+	// todoDB, err := db.NewDB("todo.db")
+	// if err != nil {
+	// 	return nil, err
+	// }
+
 	const (
 		insert  = `INSERT INTO todos(subject, description) VALUES(?, ?)`
 		confirm = `SELECT subject, description, created_at, updated_at FROM todos WHERE id = ?`
 	)
 
+	fmt.Println("DB", s.db.Ping())
+	fmt.Println("Prepare:", subject)
 	// Prepare the insert statement
 	stmt, err := s.db.PrepareContext(ctx, insert)
 	if err != nil {
@@ -34,27 +41,23 @@ func (s *TODOService) CreateTODO(ctx context.Context, subject, description strin
 	}
 	defer stmt.Close()
 
+	fmt.Println("Execute:", subject)
 	// Execute the insert statement
 	result, err := stmt.ExecContext(ctx, subject, description)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check the number of rows affected
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return nil, err
-	}
-	if rowsAffected == 0 {
-		return nil, errors.New("failed to create TODO: subject cannot be empty")
-	}
-
+	fmt.Println("LastGet:", subject)
 	// Get the ID of the inserted TODO
 	id, err := result.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Println("lastInsertId:", id)
+
+	fmt.Println("Prepare:", subject)
 	// Prepare the confirm statement
 	confirmStmt, err := s.db.PrepareContext(ctx, confirm)
 	if err != nil {
@@ -62,6 +65,7 @@ func (s *TODOService) CreateTODO(ctx context.Context, subject, description strin
 	}
 	defer confirmStmt.Close()
 
+	fmt.Println("Query:", subject)
 	// Query the inserted TODO by ID
 	row := confirmStmt.QueryRowContext(ctx, id)
 
@@ -73,7 +77,7 @@ func (s *TODOService) CreateTODO(ctx context.Context, subject, description strin
 		return nil, err
 	}
 
-	return nil, err
+	return todo, nil
 }
 
 // ReadTODO reads TODOs on DB.

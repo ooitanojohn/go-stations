@@ -20,6 +20,7 @@ func NewDB(path string) (*sql.DB, error) {
 	if _, err := db.Exec(schema); err != nil {
 		return nil, err
 	}
+	// fmt.Println("\n schema:", schema+"\n")
 
 	return db, nil
 }
