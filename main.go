@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -50,7 +52,16 @@ func realMain() error {
 	// NOTE: 新しいエンドポイントの登録はrouter.NewRouterの内部で行うようにする
 	mux := router.NewRouter(todoDB)
 
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Hello, World!")
+	})
+
 	// TODO: サーバーをlistenする
+	log.Println("Server is running on port", port)
+	err = http.ListenAndServe(port, mux)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
