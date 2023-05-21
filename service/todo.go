@@ -22,17 +22,11 @@ func NewTODOService(db *sql.DB) *TODOService {
 
 // CreateTODO creates a TODO on DB.
 func (s *TODOService) CreateTODO(ctx context.Context, subject string, description string) (*model.TODO, error) {
-	// todoDB, err := db.NewDB("todo.db")
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	const (
 		insert  = `INSERT INTO todos(subject, description) VALUES(?, ?)`
 		confirm = `SELECT subject, description, created_at, updated_at FROM todos WHERE id = ?`
 	)
 
-	fmt.Println("DB", s.db.Ping())
 	fmt.Println("Prepare:", subject)
 	// Prepare the insert statement
 	stmt, err := s.db.PrepareContext(ctx, insert)

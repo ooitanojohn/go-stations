@@ -17,12 +17,8 @@ type TODOHandler struct {
 
 // NewTODOHandler returns TODOHandler based http.Handler.
 func NewTODOHandler(svc *service.TODOService) *TODOHandler {
-	todoDB, err := db.NewDB("todo.db")
-	if err != nil {
-		return nil
-	}
 	return &TODOHandler{
-		svc: service.NewTODOService(todoDB),
+		svc: svc,
 	}
 }
 
@@ -67,10 +63,19 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Create handles the endpoint that creates the TODO.
 func (h *TODOHandler) Create(ctx context.Context, req *model.CreateTODORequest) (*model.CreateTODOResponse, error) {
-	todo, err := h.svc.CreateTODO(ctx, req.Subject, req.Description)
+	// DB接続
+	todoDB, err := db.NewDB("todo.db")
 	if err != nil {
 		return nil, err
 	}
+	// serviceのインスタンス化
+	svcTodoDB := service.NewTODOService(todoDB)
+	todo, err := svcTodoDB.CreateTODO(ctx, req.Subject, req.Description)
+	if err != nil {
+		return nil, err
+	}
+	// DB切断
+	defer todoDB.Close()
 	return &model.CreateTODOResponse{TODO: *todo}, nil
 }
 

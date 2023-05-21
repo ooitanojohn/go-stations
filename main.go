@@ -62,6 +62,7 @@ func realMain() error {
 	if err != nil {
 		return err
 	}
+	defer todoDB.Close()
 	defer rows.Close()
 
 	fmt.Println("schema")
@@ -82,8 +83,6 @@ func realMain() error {
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
 	}
-
-	defer todoDB.Close()
 
 	// NOTE: 新しいエンドポイントの登録はrouter.NewRouterの内部で行うようにする
 	mux := router.NewRouter(todoDB)
